@@ -267,6 +267,105 @@
           <el-button style="margin-top: 12px;"
                      @click="handleConfirmOrg">确认创建该组织</el-button>
         </div>
+        <!-- 3-3-1 -->
+        <div class=main
+             v-show="active === '3-3-1'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="newOrgAttr.orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">组织属性名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="newOrgAttr.orgAttrName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+
+          <el-button style="margin-top: 12px;"
+                     @click="handleApplyNewOrg">申请</el-button>
+        </div>
+        <!-- 3-3-2 -->
+        <div class=main
+             v-show="active === '3-3-2'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">组织属性名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgAttrName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-button style="margin-top: 12px;"
+                         @click="handleApproveOrgAttr(true)">通过审批</el-button>
+            </el-col>
+            <el-col :span="12">
+              <el-button style="margin-top: 12px;"
+                         @click="handleApproveOrgAttr(false)">不通过审批</el-button>
+            </el-col>
+          </el-row>
+        </div>
+        <!-- 3-3-3 -->
+        <div class=main
+             v-show="active === '3-3-3'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">组织属性名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgAttrName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+
+          <el-button style="margin-top: 12px;"
+                     @click="handleShareForOrgAttr()">确认分享秘密</el-button>
+        </div>
+        <!-- 3-3-4 -->
+        <div class=main
+             v-show="active === '3-3-4'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">组织属性名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgAttrName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+
+          <el-button style="margin-top: 12px;"
+                     @click="handleConfirmOrgAttr()">确认声明该组织属性</el-button>
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -308,13 +407,18 @@
         orgs: [],
         orgApplies: [],
         orgName: '',
+        orgAttrName: '',
         searchApplyType: '',
         newOrg: {
           orgName: '',
           t: 0,
           n: 0,
           tempUser: '',
-          users: [],
+          users: [this.userName],
+        },
+        newOrgAttr: {
+          orgName: '',
+          orgAttrName: '',
         },
         searchApplyResponse: {},
         searchOrgResponse: {},
@@ -525,6 +629,22 @@
       handleConfirmOrg() {
         //TODO real
         this.$message('组织创建成功')
+      },
+      handleApproveOrgAttr(approval) {
+        //TODO real
+        if (approval) {
+          this.$message('审批成功')
+        } else {
+          this.$message('已确认不通过该属性')
+        }
+      },
+      handleShareForOrgAttr() {
+        //TODO real
+        this.$message('分享成功')
+      },
+      handleConfirmOrgAttr() {
+        //TODO real
+        this.$message('组织属性声明成功')
       },
     }
   };
