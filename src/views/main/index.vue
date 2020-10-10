@@ -129,7 +129,7 @@
           <el-row>
             <el-col :span="4">组织名称</el-col>
             <el-col :span="20">
-              <el-input v-model="searchOrg"
+              <el-input v-model="orgName"
                         clearable>
               </el-input>
             </el-col>
@@ -151,6 +151,122 @@
             <jsonView :json='searchApplyResponse'></jsonView>
           </div>
         </div>
+        <!-- 3-1-3 -->
+        <div class=main
+             v-show="active === '3-1-3'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-button style="margin-top: 12px;"
+                     @click="handleOrgSearch">查询</el-button>
+          <div v-show="searchOrgResponse.orgId != null">
+            <jsonView :json='searchOrgResponse'></jsonView>
+          </div>
+        </div>
+        <!-- 3-2-1 -->
+        <div class=main
+             v-show="active === '3-2-1'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="newOrg.orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">阈值t和组织成员总数n</el-col>
+            <el-col :span="10">
+              <el-input v-model="newOrg.t"
+                        placeholder="t"
+                        type="number"
+                        clearable>
+              </el-input>
+            </el-col>
+            <el-col :span="10">
+              <el-input v-model="newOrg.n"
+                        placeholder="n"
+                        type="number"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">用户</el-col>
+            <el-col :span="5">
+              <el-input v-model="newOrg.tempUser"
+                        clearable>
+              </el-input>
+            </el-col>
+            <el-col :span="5">
+              <el-button style="margin-top: 12px;"
+                         @click="handleAddOrgUser(newOrg.tempUser)">添加</el-button>
+            </el-col>
+            <el-col :span="10">
+              {{newOrg.users.join(", ")}}
+            </el-col>
+          </el-row>
+
+          <el-button style="margin-top: 12px;"
+                     @click="handleApplyNewOrg">申请</el-button>
+        </div>
+        <!-- 3-2-2 -->
+        <div class=main
+             v-show="active === '3-2-2'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-button style="margin-top: 12px;"
+                         @click="handleApproveOrg(true)">加入</el-button>
+            </el-col>
+            <el-col :span="12">
+              <el-button style="margin-top: 12px;"
+                         @click="handleApproveOrg(false)">不加入</el-button>
+            </el-col>
+          </el-row>
+        </div>
+        <!-- 3-2-3 -->
+        <div class=main
+             v-show="active === '3-2-3'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+
+          <el-button style="margin-top: 12px;"
+                     @click="handleShareForOrg">确认分享秘密</el-button>
+        </div>
+        <!-- 3-2-4 -->
+        <div class=main
+             v-show="active === '3-2-4'">
+          <el-row>
+            <el-col :span="4">组织名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+
+          <el-button style="margin-top: 12px;"
+                     @click="handleConfirmOrg">确认创建该组织</el-button>
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -163,6 +279,9 @@
 }
 .el-row {
   line-height: 60px;
+}
+.el-main {
+  background-color: #ffffff;
 }
 </style>
 
@@ -188,10 +307,17 @@
         // 组织相关
         orgs: [],
         orgApplies: [],
-        searchOrg: '',
+        orgName: '',
         searchApplyType: '',
-        newOrg: '',
+        newOrg: {
+          orgName: '',
+          t: 0,
+          n: 0,
+          tempUser: '',
+          users: [],
+        },
         searchApplyResponse: {},
+        searchOrgResponse: {},
         // 组织属性相关
         orgAttrApplies: [],
         // 属性相关
@@ -355,6 +481,50 @@
           "createTime": "1594781237"
         }
         console.log(this.searchApplyResponse)
+      },
+      handleOrgSearch() {
+        //todo real
+        this.searchOrgResponse = {
+          "orgId": "simpleOrg",
+          "uidSet": [
+            "cznczn",
+            "cznczn2",
+            "weiyan"
+          ],
+          "attrSet": [],
+          "t": 2,
+          "n": 3,
+          "opk": "[3051040636633190464582099482983106068031691935944959506544005451442049861589918905283812384186287539974258112932645007, 318533588532259033489831765552169853803960893807814148877645835607845640312888141488479961785047242895355748786659343]"
+        }
+        console.log(this.searchOrgResponse)
+      },
+      handleAddOrgUser(userName) {
+        if (this.newOrg.users.indexOf(userName) != -1) {
+          this.$message('添加重复用户')
+          return
+        }
+        this.newOrg.users.push(userName)
+        console.log(this.newOrg.users)
+      },
+      handleApplyNewOrg() {
+        //TODO real
+        this.$message('申请发起成功')
+      },
+      handleApproveOrg(join) {
+        //TODO real
+        if (join) {
+          this.$message('加入成功')
+        } else {
+          this.$message('已确认不加入该组织')
+        }
+      },
+      handleShareForOrg() {
+        //TODO real
+        this.$message('分享成功')
+      },
+      handleConfirmOrg() {
+        //TODO real
+        this.$message('组织创建成功')
       },
     }
   };
