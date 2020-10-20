@@ -158,6 +158,8 @@
 
 
 <script>
+  import { generateRsaKeys } from "../../api/register";
+
   export default {
     data() {
       return {
@@ -183,8 +185,14 @@
       },
       generateKeys() {
         //TODO add real generate
-        this.priKey = 'dasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasda@#!%SADA'
-        this.pubKey = 'ysaudvdfasdidasdads'
+        if (this.fileName === '') {
+          this.$message("fileName 为空")
+          return
+        }
+        generateRsaKeys(this.fileName).then(res => {
+          this.priKey = res.data.data.priKey
+          this.pubKey = res.data.data.pubKey
+        })
       },
       generateKeys2() {
         //TODO add real generate
