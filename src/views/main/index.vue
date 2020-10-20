@@ -502,6 +502,100 @@
             </el-table-column>
           </el-table>
         </div>
+        <!-- 5 -->
+        <div class=main
+             v-show="active === '5'">
+          <el-row>
+            <el-col :span="4">明文</el-col>
+            <el-col :span="20">
+              <el-input v-model="encryptData.plainText"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">标签</el-col>
+            <el-col :span="20">
+              <el-input v-model="encryptData.tagsStr"
+                        placeholder="用逗号隔开"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">访问控制策略</el-col>
+            <el-col :span="20">
+              <el-input v-model="encryptData.tagsStr"
+                        placeholder="例子: (A AND (B OR C))"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-button style="margin-top: 12px;"
+                     @click="handleEncrypt">确认分享</el-button>
+        </div>
+        <!-- 6 -->
+        <div class=main
+             v-show="active === '6'">
+          <el-row>
+            <el-col :span="4">分享人</el-col>
+            <el-col :span="20">
+              <el-input v-model="queryRequest.fromUserName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">标签</el-col>
+            <el-col :span="20">
+              <el-input v-model="queryRequest.tag"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-button style="margin-top: 12px; margin-bottom:12px"
+                     type="primary"
+                     @click="handleQueryContents">查询</el-button>
+          <el-table :data="cipherTexts"
+                    border
+                    style="width: 100%">
+            <el-table-column prop="policy"
+                             label="访问控制策略"
+                             width="180">
+            </el-table-column>
+            <el-table-column prop="tagsStr"
+                             label="标签"
+                             width="100">
+            </el-table-column>
+            <el-table-column label="操作"
+                             width="100">
+              <template slot-scope="scope">
+                <el-button @click="showCipherText(scope.row)"
+                           type="text"
+                           style="middle"
+                           size="small">显示</el-button>
+              </template>
+            </el-table-column>
+            <el-table-column prop="plainText"
+                             label="明文">
+            </el-table-column>
+            <el-table-column fixed="right"
+                             label="操作"
+                             width="100">
+              <template slot-scope="scope">
+                <el-button @click="handleDecrypt(scope.row)"
+                           type="text"
+                           style="middle"
+                           size="small">解密</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination layout="prev, pager, next"
+                         :total="bookmark.length*10+1"
+                         @current-change="handleChangePage"
+                         :current-page.sync="bookIndex">
+          </el-pagination>
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -583,11 +677,21 @@
         },
         attrApplies: [],
         // 加密
-        plainText: '',
-        policy: '',
-        cipherText: '',
+        encryptData: {
+          plainText: '',
+          policy: '',
+          tags: [],
+          tagsStr: ''
+        },
         // 查询密文
+        queryRequest: {
+          tag: '',
+          fromUserName: '',
+        },
         cipherTexts: [],
+        bookmark: [null,],
+        bookIndex: 1,
+        pageSize: 10,
       }
     },
     watch: {
@@ -844,6 +948,45 @@
         console.log(row)
         //todo
       },
+      handleEncrypt() {
+        //TODO real
+        this.$message('分享成功')
+      },
+      handleQueryContents() {
+        var responses = {
+            "contents": [{
+            "policy": "(cznczn:friend AND simpleOrg:member4)",
+            "cipher": "{\"C0\":\"[385432142305060606611340833406329067902422647725938022013018515544848168314216996856640780149761430871146900062890711, 5748563754401831419820406140588136587840173696070255851947521866902126160485078917687535022766568518747567417190750475]\",\"C1s\":[\"[3757455770143764229957160741545060273816865246087086993633113121605298834075002274914781494410009546583613656560344729, 4035703018783749380280383213449163578691650987476226185370087906201722924887934554035488427609275113324750211935807894]\",\"[4809284297116877465723707676638743325639375741690271664640090978176325154494693342992305860141934492855351347697903996, 1583483581055026432373306204436466464036200215943457490416748270650194656151831550041925516162992367436445452907104803]\"],\"C2s\":[\"[560322342521070697261345929666216204293799558525027731989116709090515419688907783090904805604295619009457270712862369, 846128185155430374596299298467362172916624185728013785181423369149786804819827300034478920578370404396935125689019077]\",\"[6022692439119823014184574910973816479865408225296092479730520435843642413623394873682000110507453998492349107345364418, 3088466961000024671349176374898824884895801972916511870960387122983152866267996187258855952857757593323076936690398163]\"],\"C3s\":[\"[527357166780896077545014007498770403793271159564725833681775886575791125189084299108882251998836818220563513197516206, 1263883713237002063570987638583148157646965167513892481538249209827541451154208581743393554631804604743932781762097851]\",\"[6611738627044786788138924830984029322596550933529309927796334717224720682182643635245859588365147730952405164510726856, 1642941168488470413869547565582588092582814228425460756518984714891559688671587307443330921009839666995676821924298372]\"],\"CipherText\":\"[56,231,196,103,27,214,255,159,141,161,182,212,42,74,52,14,149,192,147,59,3,125,220,199,179,211,36,17,80,229,104,140]\",\"Policy\":\"(cznczn:friend AND simpleOrg:member4)\"}",
+            "tags": ["test", "cznczn"]
+          }],
+          "bookmark": "g1AAAADUeJzLYWBgYMpgSmHgKy5JLCrJTq2MT8lPzkzJBYoHBXs4Brm6xPsGu1slV-UBkZVFWrKpUWqicVKSeZKxuWWiabJJskWacZqlmZm5qYWFmWGqsbGlsYFhClA-LdUgycAyOdUwMcU4KdEsMdU0yQxkEwfMJhrZkQUAm7I9-w",
+          "pageSize": 10,
+          "count": 1
+        }
+        if (this.bookIndex > this.bookmark.length) {
+          this.bookmark.push(responses.bookmark)
+        }
+
+        responses.contents.forEach(content => {
+          content.tagsStr = content.tags.join(",")
+          this.cipherTexts.push(content)
+        })
+      },
+      handleDecrypt(row) {
+        console.log(row)
+        //todo
+        row.plainText = '测试'
+      },
+      showCipherText(row) {
+        this.$alert(row.cipher, '密文')
+      },
+      handleChangePage(page) {
+        this.bookIndex = page
+        this.doQuery(this.bookmark[page-1])
+      },
+      doQuery(bookmarkStr) {
+        console.log(bookmarkStr)
+      }
     }
   };
 
