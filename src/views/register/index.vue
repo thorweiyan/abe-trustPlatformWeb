@@ -158,7 +158,7 @@
 
 
 <script>
-  import { generateRsaKeys } from "../../api/register";
+  import { createDABEUser, generateRsaKeys, getDABEUser, platUser } from "../../api/register";
 
   export default {
     data() {
@@ -184,7 +184,6 @@
         }
       },
       generateKeys() {
-        //TODO add real generate
         if (this.fileName === '') {
           this.$message("fileName 为空")
           return
@@ -195,16 +194,35 @@
         })
       },
       generateKeys2() {
-        //TODO add real generate
-        this.abePriKey = 'dasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasdadasdasdasda@#!%SADA'
-        this.abePubKey = 'ysaudvdfasdidasdads'
+        if (this.fileName === '') {
+          this.$message("fileName 为空")
+          return
+        }
+        if (this.userName === '') {
+          this.$message("userName 为空")
+          return
+        }
+
+        createDABEUser(this.fileName, this.userName).then(res => {
+          this.abePriKey = res.data.data.Alpha
+          this.abePubKey = res.data.data.EGGAlpha
+        }).catch(err => {
+          console.log(err)
+          getDABEUser(this.fileName).then(res => {
+            this.abePriKey = res.data.data.Alpha
+            this.abePubKey = res.data.data.EGGAlpha
+          })
+        })
+        
       },
       register() {
-        //TODO add real generate
-        this.$message('注册成功');
-        this.$router.push({
+        platUser(this.fileName).then(res => {
+          this.$message('注册成功');
+          this.$router.push({
             name: "RegisterLogin"
           });
+        })
+        
       },
     }
   };
