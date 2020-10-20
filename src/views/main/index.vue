@@ -2,7 +2,7 @@
   <el-container style="height: 900px; border: 1px solid #eee; background-color: #545c64">
     <el-aside width="200px"
               style="background-color: #545c64">
-      <el-menu default-active="3-1-2"
+      <el-menu default-active="4-1"
                class="el-menu-vertical-demo"
                background-color="#545c64"
                text-color="#fff"
@@ -143,6 +143,14 @@
             <el-col :span="10">
               <el-radio v-model="searchApplyType"
                         label="2">组织属性申请</el-radio>
+            </el-col>
+          </el-row>
+          <el-row v-show="searchApplyType === '2'">
+            <el-col :span="4">组织属性名称</el-col>
+            <el-col :span="20">
+              <el-input v-model="orgAttrName"
+                        clearable>
+              </el-input>
             </el-col>
           </el-row>
           <el-button style="margin-top: 12px;"
@@ -366,6 +374,134 @@
           <el-button style="margin-top: 12px;"
                      @click="handleConfirmOrgAttr()">确认声明该组织属性</el-button>
         </div>
+        <!-- 4-1 -->
+        <div class=main
+             v-show="active === '4-1'">
+          <el-row>
+            <el-col :span="4">申请的属性</el-col>
+            <el-col :span="20">
+              <el-input v-model="applyNewAttr.attrName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">申请对象名称（用户/组织）</el-col>
+            <el-col :span="20">
+              <el-input v-model="applyNewAttr.toUserName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">备注</el-col>
+            <el-col :span="20">
+              <el-input v-model="applyNewAttr.remark"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">是否公开</el-col>
+            <el-col :span="10">
+              <el-radio v-model="applyNewAttr.isPublic"
+                        label=0>公开</el-radio>
+            </el-col>
+            <el-col :span="10">
+              <el-radio v-model="applyNewAttr.isPublic"
+                        label=1>不公开</el-radio>
+            </el-col>
+          </el-row>
+          <el-button style="margin-top: 12px;"
+                     @click="handleApplyUserAttr">确认申请</el-button>
+        </div>
+        <!-- 4-2 -->
+        <div class=main
+             v-show="active === '4-2'">
+          <el-row>
+            <el-col :span="4">类型</el-col>
+            <el-col :span="10">
+              <el-radio v-model="searchApplyRequest.type"
+                        label=0>用户属性</el-radio>
+            </el-col>
+            <el-col :span="10">
+              <el-radio v-model="searchApplyRequest.type"
+                        label=1>组织属性</el-radio>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">申请人</el-col>
+            <el-col :span="20">
+              <el-input v-model="searchApplyRequest.userName"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">状态</el-col>
+            <el-col :span="20">
+              <el-dropdown @command="handleStatusClick">
+                <el-button>
+                  {{searchApplyRequest.status}}<i class="el-icon-arrow-down el-icon--right"></i>
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="ALL">ALL</el-dropdown-item>
+                  <el-dropdown-item command="PENDING">PENDING</el-dropdown-item>
+                  <el-dropdown-item command="SUCCESS">SUCCESS</el-dropdown-item>
+                  <el-dropdown-item command="FAIL">FAIL</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </el-col>
+          </el-row>
+          <el-button style="margin-top: 12px; margin-bottom:12px"
+                     type="primary"
+                     @click="handleSearchAttrApply">查询申请</el-button>
+          <el-table :data="attrApplies"
+                    border
+                    style="width: 100%">
+            <el-table-column prop="fromUid"
+                             label="申请人"
+                             width="80">
+            </el-table-column>
+            <el-table-column prop="toUid"
+                             label="被申请人"
+                             width="80">
+            </el-table-column>
+            <el-table-column prop="toOrgId"
+                             label="被申请组织"
+                             width="100">
+            </el-table-column>
+            <el-table-column prop="isPublicStr"
+                             label="是否公开"
+                             width="80">
+            </el-table-column>
+            <el-table-column prop="attrName"
+                             label="申请属性"
+                             width="110">
+            </el-table-column>
+            <el-table-column prop="status"
+                             label="状态"
+                             width="90">
+            </el-table-column>
+            <el-table-column prop="approvalMapStr"
+                             label="审批状态"
+                             width="80">
+            </el-table-column>
+            <el-table-column prop="remark"
+                             label="备注">
+            </el-table-column>
+            <el-table-column fixed="right"
+                             label="操作"
+                             width="100">
+              <template slot-scope="scope">
+                <el-button @click="handleClick(scope.row)"
+                           type="text"
+                           style="middle"
+                           size="small">审批</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -382,6 +518,15 @@
 .el-main {
   background-color: #ffffff;
 }
+.el-dropdown {
+  vertical-align: top;
+}
+.el-dropdown + .el-dropdown {
+  margin-left: 15px;
+}
+.el-icon-arrow-down {
+  font-size: 12px;
+}
 </style>
 
 <script>
@@ -394,7 +539,7 @@
     data() {
       return {
         fileName: this.$route.params.fileName,
-        active: '3-1-2',
+        active: '4-2',
         // 基本信息
         userName: null,
         priKey: null,
@@ -425,7 +570,17 @@
         // 组织属性相关
         orgAttrApplies: [],
         // 属性相关
-        applyNewAttr: '',
+        applyNewAttr: {
+          toUserName: '',
+          remark: '',
+          attrName: '',
+          isPublic: 2,
+        },
+        searchApplyRequest: {
+          type: 2,
+          userName: '',
+          status: 'ALL',
+        },
         attrApplies: [],
         // 加密
         plainText: '',
@@ -645,6 +800,49 @@
       handleConfirmOrgAttr() {
         //TODO real
         this.$message('组织属性声明成功')
+      },
+      handleStatusClick(val) {
+        this.searchApplyRequest.status = val
+      },
+      handleSearchAttrApply() {
+        var rAttrApplies = [
+          {
+            "fromUid": "weiyan",
+            "toUid": "cznczn",
+            "toOrgId": "",
+            "isPublic": true,
+            "attrName": "cznczn:friend",
+            "remark": "authorize a friend for me",
+            "n": 1,
+            "t": 1,
+            "applyType": "TO_USER",
+            "status": "PENDING",
+            "approvalMap": {
+              "cznczn": null
+            }
+          },
+        ]
+        rAttrApplies.forEach(aa => {
+          aa.isPublicStr = aa.isPublic ? "是" : "否"
+          var mapStr = ''
+          for (const name in aa.approvalMap) {
+            var value = aa.approvalMap[name]
+            if (value === null) {
+              mapStr += name + '未审批\n'
+            } else {
+              mapStr += name 
+              + (value.agree ? "已同意，备注：" : "不同意，备注：") 
+              + (value.approveRemark === '' ? "无" : value.approveRemark)
+            }
+          }
+          aa.approvalMapStr = mapStr
+
+          this.attrApplies.push(aa)
+        });
+      },
+      handleClick(row) {
+        console.log(row)
+        //todo
       },
     }
   };
