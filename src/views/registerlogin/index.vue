@@ -20,6 +20,7 @@
 </template>
 
 <script>
+import { getDABEUser } from '../../api/register';
 export default {
   name: "registerlogin",
   data() {
@@ -37,25 +38,16 @@ export default {
   filters: {},
   methods: {
     Login() {
-      // func.Post(api.login, { userName: this.userName, password: this.password }, res => {
-      //   if (res.status === 202) {
-      //     this.logining = true;
-      //     Toast("登录成功");
-      //     this.$router.push({
-      //       name: "Main"
-      //     });
-      //   } else {
-      //     Toast("登录失败\n" + res.data.errorMsg);
-      //     // this.password = "";
-      //   }
-      // });
-      this.$message('登录成功');
+      getDABEUser(this.fileName).then(res => {
+        console.log(res)
+        this.$message('登录成功');
         this.$router.push({
             name: "Main",
             params: {
               fileName: this.fileName,
             },
           });
+      })
     },
   },
   onShow() {},

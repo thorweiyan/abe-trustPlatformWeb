@@ -12,7 +12,7 @@ export function createDABEUser(fileName, userName) {
 }
 
 export function getDABEUser(fileName) {
-    return get(api.DABEUser, qs.stringify({ "fileName": fileName }))
+    return get(api.DABEUser, { params: { "fileName": fileName } })
 }
 
 export function platUser(fileName) {
