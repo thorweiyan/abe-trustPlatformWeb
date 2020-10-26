@@ -2,7 +2,7 @@
   <el-container style="height: 900px; border: 1px solid #eee; background-color: #545c64">
     <el-aside width="200px"
               style="background-color: #545c64">
-      <el-menu default-active="4-1"
+      <el-menu default-active="1"
                class="el-menu-vertical-demo"
                background-color="#545c64"
                text-color="#fff"
@@ -95,6 +95,10 @@
             <el-col :span="4">现有属性</el-col>
             <el-col :span="20">{{attributesForDisplay}}</el-col>
           </el-row>
+          <el-row>
+            <el-col :span="4">申请的属性</el-col>
+            <el-col :span="20">{{othersAttributesForDisplay}}</el-col>
+          </el-row>
         </div>
         <!-- 2 -->
         <div class=main
@@ -113,14 +117,14 @@
             </el-col>
           </el-row>
           <el-button style="margin-top: 12px;"
-                     @click="handleApplyUserAttr">确认申请</el-button>
+                     @click="handleAnnotateAttr">确认申请</el-button>
         </div>
         <!-- 3-1-1 -->
         <div class=main
              v-show="active === '3-1-1'">
           <el-row>
             <el-col :span="4">现有组织</el-col>
-            <el-col :span="20">{{orgs.join(', ')}}</el-col>
+            <el-col :span="20">{{orgsForDisplay}}</el-col>
           </el-row>
         </div>
         <!-- 3-1-2 -->
@@ -138,14 +142,14 @@
             <el-col :span="4">查询类型</el-col>
             <el-col :span="10">
               <el-radio v-model="searchApplyType"
-                        label="1">组织申请</el-radio>
+                        label="CREATION">组织申请</el-radio>
             </el-col>
             <el-col :span="10">
               <el-radio v-model="searchApplyType"
-                        label="2">组织属性申请</el-radio>
+                        label="ATTRIBUTE">组织属性申请</el-radio>
             </el-col>
           </el-row>
-          <el-row v-show="searchApplyType === '2'">
+          <el-row v-show="searchApplyType === 'ATTRIBUTE'">
             <el-col :span="4">组织属性名称</el-col>
             <el-col :span="20">
               <el-input v-model="orgAttrName"
@@ -155,7 +159,7 @@
           </el-row>
           <el-button style="margin-top: 12px;"
                      @click="handleApplySearch">查询</el-button>
-          <div v-show="searchApplyResponse.orgId != null">
+          <div v-show="searchApplyResponse != null && searchApplyResponse.orgId != null">
             <jsonView :json='searchApplyResponse'></jsonView>
           </div>
         </div>
@@ -173,7 +177,32 @@
           <el-button style="margin-top: 12px;"
                      @click="handleOrgSearch">查询</el-button>
           <div v-show="searchOrgResponse.orgId != null">
-            <jsonView :json='searchOrgResponse'></jsonView>
+            <el-row>
+              <el-col :span="4">组织名称</el-col>
+              <el-col :span="20">
+                {{ searchOrgResponse.orgId }}
+              </el-col>
+              <el-col :span="4">组织成员</el-col>
+              <el-col :span="20">
+                {{ searchOrgResponse.uidSet == null ? '' : searchOrgResponse.uidSet.join(', ') }}
+              </el-col>
+              <el-col :span="4">现有属性</el-col>
+              <el-col :span="20">
+                {{ searchOrgResponse.attrSet == null ? '' : searchOrgResponse.attrSet.join(', ') }}
+              </el-col>
+              <el-col :span="4">阈值</el-col>
+              <el-col :span="20">
+                {{ searchOrgResponse.t }}
+              </el-col>
+              <el-col :span="4">成员总数</el-col>
+              <el-col :span="20">
+                {{ searchOrgResponse.n }}
+              </el-col>
+              <el-col :span="4">opk</el-col>
+              <el-col :span="20">
+                {{ searchOrgResponse.opk }}
+              </el-col>
+            </el-row>
           </div>
         </div>
         <!-- 3-2-1 -->
@@ -386,9 +415,20 @@
             </el-col>
           </el-row>
           <el-row>
+            <el-col :span="4">申请对象类型</el-col>
+            <el-col :span="10">
+              <el-radio v-model="applyNewAttr.type"
+                        label=0>用户</el-radio>
+            </el-col>
+            <el-col :span="10">
+              <el-radio v-model="applyNewAttr.type"
+                        label=1>组织</el-radio>
+            </el-col>
+          </el-row>
+          <el-row>
             <el-col :span="4">申请对象名称（用户/组织）</el-col>
             <el-col :span="20">
-              <el-input v-model="applyNewAttr.toUserName"
+              <el-input v-model="applyNewAttr.toName"
                         clearable>
               </el-input>
             </el-col>
@@ -429,6 +469,22 @@
                         label=1>组织属性</el-radio>
             </el-col>
           </el-row>
+          <el-row v-show="searchApplyRequest.type == 0">
+            <el-col :span="4">被申请人</el-col>
+            <el-col :span="20">
+              <el-input v-model="searchApplyRequest.toUid"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row v-show="searchApplyRequest.type == 1">
+            <el-col :span="4">被申请组织</el-col>
+            <el-col :span="20">
+              <el-input v-model="searchApplyRequest.toOrgId"
+                        clearable>
+              </el-input>
+            </el-col>
+          </el-row>
           <el-row>
             <el-col :span="4">申请人</el-col>
             <el-col :span="20">
@@ -458,7 +514,8 @@
                      @click="handleSearchAttrApply">查询申请</el-button>
           <el-table :data="attrApplies"
                     border
-                    style="width: 100%">
+                    style="width: 100%"
+                    cell-style="white-space: pre-line">
             <el-table-column prop="fromUid"
                              label="申请人"
                              width="80">
@@ -484,8 +541,7 @@
                              width="90">
             </el-table-column>
             <el-table-column prop="approvalMapStr"
-                             label="审批状态"
-                             width="80">
+                             label="审批状态">
             </el-table-column>
             <el-table-column prop="remark"
                              label="备注">
@@ -624,26 +680,35 @@
 </style>
 
 <script>
+import { getOrgApply, getOrgAttrApply, getOrgInfo } from '../../api/org';
+import { getDABEUser } from '../../api/register';
+import { applyOthersAttr, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr } from '../../api/userAttr';
   import jsonView from '../../components/jsonView'
 
   export default {
     components: {
       jsonView: jsonView,
     },
+    created() {
+      this.baseUserInfo()
+    },
     data() {
       return {
         fileName: this.$route.params.fileName,
-        active: '4-2',
+        active: '1',
         // 基本信息
         userName: null,
         priKey: null,
         pubKey: null,
         attributes: [],
         attributesForDisplay: null,
+        othersAttributes: [],
+        othersAttributesForDisplay: null,
         // 声明用户属性
         newAttr: '',
         // 组织相关
         orgs: [],
+        orgsForDisplay: '',
         orgApplies: [],
         orgName: '',
         orgAttrName: '',
@@ -665,10 +730,11 @@
         orgAttrApplies: [],
         // 属性相关
         applyNewAttr: {
-          toUserName: '',
+          toName: '',
           remark: '',
           attrName: '',
           isPublic: 2,
+          type: 2,
         },
         searchApplyRequest: {
           type: 2,
@@ -698,6 +764,18 @@
       attributes: {
         handler() {
           this.attributesForDisplay = this.attributes.join(', ')
+        },
+        deep:true
+      },
+      othersAttributes: {
+        handler() {
+          this.othersAttributesForDisplay = this.othersAttributes.join(', ')
+        },
+        deep:true
+      },
+      orgs: {
+        handler() {
+          this.orgsForDisplay = this.orgs.join(', ')
         },
         deep:true
       },
@@ -762,12 +840,28 @@
       },
       baseUserInfo: function() {
         console.log('base user info')
+        getDABEUser(this.fileName).then(res => {
+          this.dabeUser = res.data.data
+          this.userName = this.dabeUser.Name
+          this.pubKey = this.dabeUser.EGGAlpha
+          
+          this.attributes = []
+          this.othersAttributes = []
+          for (const key in this.dabeUser.APKMap) {
+            this.attributes.push(key)
+          }
+          for (const key in this.dabeUser.appliedAttrMap) {
+            this.othersAttributes.push(key)
+          }
+        })
       },
       newUserAttr() {
-        
       },
       existingOrgs() {
-        
+        this.orgs = []
+        for (const key in this.dabeUser.OPKMap) {
+          this.orgs.push(key)
+        }
       },
       relatedApplies() {
         
@@ -813,52 +907,61 @@
       },
 
       // 操作
-      handleApplyUserAttr() {
+      handleAnnotateAttr() {
         if (this.attributes.indexOf(this.newAttr) != -1) {
           this.$message('申请重复属性');
           return
         }
-        //todo real
-        this.$message('申请成功');
-        this.attributes.push(this.newAttr)
+        
+        DABEGenerateUserAttr(this.fileName, this.newAttr).then(res => {
+          console.log(res)
+          this.$message("DABE生成属性成功")
+          PlatGenerateUserAttr(this.fileName, this.newAttr).then(res => {
+            console.log(res)
+            this.$message("Plat生成属性成功")
+            this.attributes.push(this.newAttr)
+          })
+        })
+      },
+      handleApplyUserAttr() {
+        if (this.applyNewAttr.type === 2 || this.applyNewAttr.isPublic === 2 
+        || this.applyNewAttr.attrName === '' || this.applyNewAttr.toName === '') {
+          this.$message("请检查参数")
+          return
+        }
+        applyOthersAttr(this.fileName, this.applyNewAttr.attrName, this.applyNewAttr.type == '0' ? this.applyNewAttr.toName : '',
+          this.applyNewAttr.type == '1' ? this.applyNewAttr.toName : '', this.applyNewAttr.isPublic == '0', this.applyNewAttr.remark)
+          .then(res => {
+            console.log(res)
+            this.$message("申请成功")
+          })
       },
       handleApplySearch() {
-        //todo real
-        this.searchApplyResponse = {
-          "orgId": "simpleOrg",
-          "uidMap": {
-            "cznczn": true,
-            "cznczn2": false,
-            "weiyan": false
-          },
-          "shareMap": {
-            "cznczn": {},
-            "cznczn2": {},
-            "weiyan": {}
-          },
-          "opkMap": {},
-          "t": 2,
-          "n": 3,
-          "fromUserName": "cznczn",
-          "status": "PENDING_APPROVE",
-          "createTime": "1594781237"
+        if (this.searchApplyType === 'CREATION') {
+          getOrgApply(this.orgName, this.searchApplyType).then(res => {
+            if (res.data.data == null) {
+              this.$message("没有有效申请")
+            }
+            this.searchApplyResponse = res.data.data === null ? null : res.data.data
+          })
+        } else if (this.searchApplyType === 'ATTRIBUTE') {
+          getOrgAttrApply(this.orgName, this.searchApplyType, this.orgAttrName).then(res => {
+            if (res.data.data == null) {
+              this.$message("没有有效申请")
+            }
+            this.searchApplyResponse = res.data.data == null ? null : res.data.data
+          })
         }
+
         console.log(this.searchApplyResponse)
       },
       handleOrgSearch() {
-        //todo real
-        this.searchOrgResponse = {
-          "orgId": "simpleOrg",
-          "uidSet": [
-            "cznczn",
-            "cznczn2",
-            "weiyan"
-          ],
-          "attrSet": [],
-          "t": 2,
-          "n": 3,
-          "opk": "[3051040636633190464582099482983106068031691935944959506544005451442049861589918905283812384186287539974258112932645007, 318533588532259033489831765552169853803960893807814148877645835607845640312888141488479961785047242895355748786659343]"
-        }
+        getOrgInfo(this.orgName).then(res => {
+          if (res.data.data == null) {
+              this.$message("没有查到该组织")
+            }
+            this.searchOrgResponse = res.data.data == null ? {} : res.data.data
+        })
         console.log(this.searchOrgResponse)
       },
       handleAddOrgUser(userName) {
@@ -909,40 +1012,35 @@
         this.searchApplyRequest.status = val
       },
       handleSearchAttrApply() {
-        var rAttrApplies = [
-          {
-            "fromUid": "weiyan",
-            "toUid": "cznczn",
-            "toOrgId": "",
-            "isPublic": true,
-            "attrName": "cznczn:friend",
-            "remark": "authorize a friend for me",
-            "n": 1,
-            "t": 1,
-            "applyType": "TO_USER",
-            "status": "PENDING",
-            "approvalMap": {
-              "cznczn": null
-            }
-          },
-        ]
-        rAttrApplies.forEach(aa => {
-          aa.isPublicStr = aa.isPublic ? "是" : "否"
-          var mapStr = ''
-          for (const name in aa.approvalMap) {
-            var value = aa.approvalMap[name]
-            if (value === null) {
-              mapStr += name + '未审批\n'
-            } else {
-              mapStr += name 
-              + (value.agree ? "已同意，备注：" : "不同意，备注：") 
-              + (value.approveRemark === '' ? "无" : value.approveRemark)
-            }
-          }
-          aa.approvalMapStr = mapStr
+        if (this.searchApplyRequest.type == 2) {
+          this.$message("请检查参数")
+          return
+        }
+        var rAttrApplies = []
+        getOthersApply(this.searchApplyRequest.type == 0 ? this.searchApplyRequest.toUid : this.searchApplyRequest.toOrgId,
+          this.searchApplyRequest.type, this.searchApplyRequest.userName, this.searchApplyRequest.status).then(res => {
+            console.log(res)
+            rAttrApplies = res.data.data
 
-          this.attrApplies.push(aa)
-        });
+            this.attrApplies = []
+            rAttrApplies.forEach(aa => {
+              aa.isPublicStr = aa.isPublic ? "是" : "否"
+              var mapStr = ''
+              for (const name in aa.approvalMap) {
+                var value = aa.approvalMap[name]
+                if (value === null) {
+                  mapStr += name + '未审批 \n '
+                } else {
+                  mapStr += name 
+                  + (value.agree ? "已同意，备注：" : "不同意，备注：") 
+                  + (value.approveRemark === '' ? "无" : value.approveRemark) + ' \n '
+                }
+              }
+              aa.approvalMapStr = mapStr
+
+              this.attrApplies.push(aa)
+            });
+          })
       },
       handleClick(row) {
         console.log(row)
