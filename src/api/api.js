@@ -11,6 +11,7 @@ export default {
   orgApply: host + "/org/apply",
   org: host + "/org/",
   applyOthersAttr: host + "/user/attr/apply",
+  approveAttrApply: host + "/user/attr/approval",
 };
 
 export function post(url, params) {

@@ -514,8 +514,7 @@
                      @click="handleSearchAttrApply">查询申请</el-button>
           <el-table :data="attrApplies"
                     border
-                    style="width: 100%"
-                    cell-style="white-space: pre-line">
+                    style="width: 100%">
             <el-table-column prop="fromUid"
                              label="申请人"
                              width="80">
@@ -550,10 +549,18 @@
                              label="操作"
                              width="100">
               <template slot-scope="scope">
-                <el-button @click="handleClick(scope.row)"
-                           type="text"
-                           style="middle"
-                           size="small">审批</el-button>
+                <el-row style="line-height: 30px">
+                  <el-button @click="handleClick(scope.row, true)"
+                             type="text"
+                             style="middle"
+                             size="small">审批通过</el-button>
+                </el-row>
+                <el-row style="line-height: 30px">
+                  <el-button @click="handleClick(scope.row, false)"
+                             type="text"
+                             style="middle"
+                             size="small">审批不通过</el-button>
+                </el-row>
               </template>
             </el-table-column>
           </el-table>
@@ -682,7 +689,7 @@
 <script>
 import { getOrgApply, getOrgAttrApply, getOrgInfo } from '../../api/org';
 import { getDABEUser } from '../../api/register';
-import { applyOthersAttr, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr } from '../../api/userAttr';
+import { applyOthersAttr, approveAttrApply, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr } from '../../api/userAttr';
   import jsonView from '../../components/jsonView'
 
   export default {
@@ -1029,11 +1036,11 @@ import { applyOthersAttr, DABEGenerateUserAttr, getOthersApply, PlatGenerateUser
               for (const name in aa.approvalMap) {
                 var value = aa.approvalMap[name]
                 if (value === null) {
-                  mapStr += name + '未审批 \n '
+                  mapStr += name + '未审批;  '
                 } else {
                   mapStr += name 
                   + (value.agree ? "已同意，备注：" : "不同意，备注：") 
-                  + (value.approveRemark === '' ? "无" : value.approveRemark) + ' \n '
+                  + (value.approveRemark === '' ? "无" : value.approveRemark) + ';  '
                 }
               }
               aa.approvalMapStr = mapStr
@@ -1042,9 +1049,37 @@ import { applyOthersAttr, DABEGenerateUserAttr, getOthersApply, PlatGenerateUser
             });
           })
       },
-      handleClick(row) {
+      //approve
+      handleClick(row, flag) {
         console.log(row)
-        //todo
+        if (!this.canApprove(row)) {
+          this.$message("没有权限审批")
+          return
+        }
+        this.$prompt('请输入备注', flag ? '审批通过' : '审批不通过', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+        }).then(({value}) => {
+          approveAttrApply(this.fileName, row.fromUid, row.attrName, value, flag).then(res => {
+            console.log(res)
+            this.$message('审批成功')
+            this.handleSearchAttrApply()
+          })
+        })
+      },
+      canApprove(row) {
+        if (row.status != 'PENDING') {
+          return false
+        }
+        if (row.toUid != '') {
+          return row.toUid === this.userName
+        }
+        for (const key in row.approvalMap) {
+          if (key === row.userName) {
+            return row.approvalMap[key] == null
+          }
+        }
+        return false
       },
       handleEncrypt() {
         //TODO real

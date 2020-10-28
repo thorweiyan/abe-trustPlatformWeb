@@ -18,3 +18,10 @@ export function applyOthersAttr(fileName, attrName, toUserName, toOrgName, isPub
 export function getOthersApply(toId, type, userName, status) {
     return get(api.applyOthersAttr, { params: { "toId": toId, "type": type, "userName": userName, "status": status } })
 }
+
+export function approveAttrApply(fileName, toUserName, attrName, remark, agree,) {
+    return post(api.approveAttrApply, {
+        "fileName": fileName, "toUserName": toUserName, "attrName": attrName,
+        "remark": remark, "agree": agree,
+    })
+}
