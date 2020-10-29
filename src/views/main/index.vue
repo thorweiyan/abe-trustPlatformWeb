@@ -99,6 +99,8 @@
             <el-col :span="4">申请的属性</el-col>
             <el-col :span="20">{{othersAttributesForDisplay}}</el-col>
           </el-row>
+          <el-button style="margin-top: 12px;"
+                     @click="syncAttr">同步属性</el-button>
         </div>
         <!-- 2 -->
         <div class=main
@@ -689,7 +691,7 @@
 <script>
 import { getOrgApply, getOrgAttrApply, getOrgInfo } from '../../api/org';
 import { getDABEUser } from '../../api/register';
-import { applyOthersAttr, approveAttrApply, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr } from '../../api/userAttr';
+import { applyOthersAttr, approveAttrApply, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr, syncAttr } from '../../api/userAttr';
   import jsonView from '../../components/jsonView'
 
   export default {
@@ -1119,6 +1121,22 @@ import { applyOthersAttr, approveAttrApply, DABEGenerateUserAttr, getOthersApply
       },
       doQuery(bookmarkStr) {
         console.log(bookmarkStr)
+      },
+      syncAttr() {
+        syncAttr(this.fileName).then(res => {
+          this.dabeUser = res.data.data
+          this.userName = this.dabeUser.Name
+          this.pubKey = this.dabeUser.EGGAlpha
+          
+          this.attributes = []
+          this.othersAttributes = []
+          for (const key in this.dabeUser.APKMap) {
+            this.attributes.push(key)
+          }
+          for (const key in this.dabeUser.appliedAttrMap) {
+            this.othersAttributes.push(key)
+          }
+        })
       }
     }
   };

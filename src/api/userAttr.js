@@ -25,3 +25,9 @@ export function approveAttrApply(fileName, toUserName, attrName, remark, agree,)
         "remark": remark, "agree": agree,
     })
 }
+
+export function syncAttr(fileName) {
+    return post(api.syncAttr, {
+        "fileName": fileName,
+    })
+}
