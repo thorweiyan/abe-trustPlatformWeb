@@ -14,3 +14,9 @@ export function getOrgAttrApply(orgName, type, attrName) {
 export function getOrgInfo(orgName) {
     return get(api.org, { params: { "orgName": orgName } })
 }
+
+export function applyCreateOrg(fileName, t, n, users, orgName,) {
+    return post(api.applyCreateOrg, {
+        "fileName": fileName, "t": t, "n": n, "users": users, "orgName": orgName,
+    })
+}

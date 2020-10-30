@@ -16,6 +16,8 @@ export default {
   encryptAndUpload: host + "/content/",
   getContents: host + "/content/list",
   decryptContent: host + "/content/decryption",
+
+  applyCreateOrg: host + "/org/apply/creation",
 };
 
 export function post(url, params) {

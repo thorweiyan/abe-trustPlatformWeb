@@ -162,7 +162,55 @@
           <el-button style="margin-top: 12px;"
                      @click="handleApplySearch">查询</el-button>
           <div v-show="searchApplyResponse != null && searchApplyResponse.orgId != null">
-            <jsonView :json='searchApplyResponse'></jsonView>
+            <el-row>
+              <el-col :span="4">组织名称</el-col>
+              <el-col :span="20">
+                {{ searchApplyResponse.orgId }}
+              </el-col>
+            </el-row>
+            <el-row v-show="searchApplyResponse.attrName != ''">
+              <el-col :span="4">组织属性名称</el-col>
+              <el-col :span="20">
+                {{ searchApplyResponse.attrName }}
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="4">成员审批情况</el-col>
+              <el-col :span="20">
+                {{ searchApplyResponse.uidMapStr }}
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="4">成员秘密分享情况</el-col>
+              <el-col :span="20">
+                <p v-for="item in searchApplyResponse.shareMap2"
+                   v-bind:key="item">{{item.user + ':' + item.value}}</p>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="4">阈值</el-col>
+              <el-col :span="20">
+                {{ searchApplyResponse.t }}
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="4">成员总数</el-col>
+              <el-col :span="20">
+                {{ searchApplyResponse.n }}
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="4">发起人</el-col>
+              <el-col :span="20">
+                {{ searchApplyResponse.fromUserName }}
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="4">状态</el-col>
+              <el-col :span="20">
+                {{ searchApplyResponse.status }}
+              </el-col>
+            </el-row>
           </div>
         </div>
         <!-- 3-1-3 -->
@@ -689,16 +737,12 @@
 </style>
 
 <script>
-import { getOrgApply, getOrgAttrApply, getOrgInfo } from '../../api/org';
+import { applyCreateOrg, getOrgApply, getOrgAttrApply, getOrgInfo } from '../../api/org';
 import { getDABEUser } from '../../api/register';
 import { applyOthersAttr, approveAttrApply, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr, syncAttr } from '../../api/userAttr';
 import { decryptContent, encryptAndUpload, getContents } from '../../api/content';
-import jsonView from '../../components/jsonView'
 
   export default {
-    components: {
-      jsonView: jsonView,
-    },
     created() {
       this.baseUserInfo()
     },
@@ -728,7 +772,7 @@ import jsonView from '../../components/jsonView'
           t: 0,
           n: 0,
           tempUser: '',
-          users: [this.userName],
+          users: [],
         },
         newOrgAttr: {
           orgName: '',
@@ -880,7 +924,7 @@ import jsonView from '../../components/jsonView'
         
       },
       orgApply() {
-        
+        this.newOrg.users.push(this.userName)
       },
       approveOrgApply() {
         
@@ -951,18 +995,40 @@ import jsonView from '../../components/jsonView'
           getOrgApply(this.orgName, this.searchApplyType).then(res => {
             if (res.data.data == null) {
               this.$message("没有有效申请")
+              return
             }
-            this.searchApplyResponse = res.data.data === null ? null : res.data.data
+            this.searchApplyResponse = res.data.data
+            this.fillSearchApplyResponse()
           })
         } else if (this.searchApplyType === 'ATTRIBUTE') {
           getOrgAttrApply(this.orgName, this.searchApplyType, this.orgAttrName).then(res => {
             if (res.data.data == null) {
               this.$message("没有有效申请")
+              return
             }
-            this.searchApplyResponse = res.data.data == null ? null : res.data.data
+            this.searchApplyResponse = res.data.data
+            this.fillSearchApplyResponse()
           })
+        } else {
+          return
         }
+      },
+      fillSearchApplyResponse() {
+        var mapStr = ''
+        for (const user in this.searchApplyResponse.uidMap) {
+          mapStr += user + ':' + (this.searchApplyResponse.uidMap[user] ? '已审批； ' : '未审批；')
+        }
+        this.searchApplyResponse.uidMapStr = mapStr
 
+        var shareMap2 = []
+        for (const user in this.searchApplyResponse.shareMap) {
+          var deepStr = ''
+          for (const user2 in this.searchApplyResponse.shareMap[user]) {
+            deepStr += user2 + ':' + this.searchApplyResponse.shareMap[user][user2] + '；'
+          }
+          shareMap2.push({"user": user, "value" : deepStr})
+        }
+        this.searchApplyResponse.shareMap2 = shareMap2
         console.log(this.searchApplyResponse)
       },
       handleOrgSearch() {
@@ -984,7 +1050,10 @@ import jsonView from '../../components/jsonView'
       },
       handleApplyNewOrg() {
         //TODO real
-        this.$message('申请发起成功')
+        applyCreateOrg(this.fileName, this.newOrg.t, this.newOrg.n, this.newOrg.users, this.newOrg.orgName).then(res => {
+          console.log(res)
+          this.$message('申请发起成功')
+        })
       },
       handleApproveOrg(join) {
         //TODO real
