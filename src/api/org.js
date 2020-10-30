@@ -20,3 +20,21 @@ export function applyCreateOrg(fileName, t, n, users, orgName,) {
         "fileName": fileName, "t": t, "n": n, "users": users, "orgName": orgName,
     })
 }
+
+export function approveJoinOrg(fileName, orgName, attrName) {
+    return post(api.approveJoinOrg, {
+        "fileName": fileName, "attrName": attrName, "orgName": orgName,
+    })
+}
+
+export function sharePkForOrg(type, orgName, fileName, attrName) {
+    return post(api.sharePKForOrg, qs.stringify({
+        "fileName": fileName, "type": type, "orgName": orgName, "attrName": attrName,
+    }))
+}
+
+export function completePK(type, orgName, fileName, attrName) {
+    return post(api.completePK, qs.stringify({
+        "fileName": fileName, "type": type, "orgName": orgName, "attrName": attrName,
+    }))
+}

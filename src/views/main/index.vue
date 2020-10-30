@@ -35,14 +35,14 @@
             <template slot="title">组织操作</template>
             <el-menu-item index="3-2-1">申请新组织</el-menu-item>
             <el-menu-item index="3-2-2">审批新组织</el-menu-item>
-            <el-menu-item index="3-2-3">秘密分享</el-menu-item>
+            <el-menu-item index="3-2-3">提交part-pk</el-menu-item>
             <el-menu-item index="3-2-4">确认新组织</el-menu-item>
           </el-menu-item-group>
           <el-menu-item-group>
             <template slot="title">组织属性操作</template>
             <el-menu-item index="3-3-1">申请新组织属性</el-menu-item>
             <el-menu-item index="3-3-2">审批新组织属性</el-menu-item>
-            <el-menu-item index="3-3-3">秘密分享</el-menu-item>
+            <el-menu-item index="3-3-3">提交part-pk</el-menu-item>
             <el-menu-item index="3-3-4">确认新组织属性</el-menu-item>
           </el-menu-item-group>
         </el-submenu>
@@ -184,7 +184,7 @@
               <el-col :span="4">成员秘密分享情况</el-col>
               <el-col :span="20">
                 <p v-for="item in searchApplyResponse.shareMap2"
-                   v-bind:key="item">{{item.user + ':' + item.value}}</p>
+                   v-bind:key="item.user">{{item.user + '中：' + item.value}}</p>
               </el-col>
             </el-row>
             <el-row>
@@ -211,6 +211,13 @@
                 {{ searchApplyResponse.status }}
               </el-col>
             </el-row>
+            <el-row>
+              <el-col :span="4">OPK组合情况</el-col>
+              <el-col :span="20">
+                <span v-for="item in searchApplyResponse.opkSet2"
+                      v-bind:key="item">{{item + ' 已提交part-pk； '}}</span>
+              </el-col>
+            </el-row>
           </div>
         </div>
         <!-- 3-1-3 -->
@@ -232,22 +239,32 @@
               <el-col :span="20">
                 {{ searchOrgResponse.orgId }}
               </el-col>
+            </el-row>
+            <el-row>
               <el-col :span="4">组织成员</el-col>
               <el-col :span="20">
                 {{ searchOrgResponse.uidSet == null ? '' : searchOrgResponse.uidSet.join(', ') }}
               </el-col>
+            </el-row>
+            <el-row>
               <el-col :span="4">现有属性</el-col>
               <el-col :span="20">
                 {{ searchOrgResponse.attrSet == null ? '' : searchOrgResponse.attrSet.join(', ') }}
               </el-col>
+            </el-row>
+            <el-row>
               <el-col :span="4">阈值</el-col>
               <el-col :span="20">
                 {{ searchOrgResponse.t }}
               </el-col>
+            </el-row>
+            <el-row>
               <el-col :span="4">成员总数</el-col>
               <el-col :span="20">
                 {{ searchOrgResponse.n }}
               </el-col>
+            </el-row>
+            <el-row>
               <el-col :span="4">opk</el-col>
               <el-col :span="20">
                 {{ searchOrgResponse.opk }}
@@ -313,16 +330,8 @@
               </el-input>
             </el-col>
           </el-row>
-          <el-row>
-            <el-col :span="12">
-              <el-button style="margin-top: 12px;"
-                         @click="handleApproveOrg(true)">加入</el-button>
-            </el-col>
-            <el-col :span="12">
-              <el-button style="margin-top: 12px;"
-                         @click="handleApproveOrg(false)">不加入</el-button>
-            </el-col>
-          </el-row>
+          <el-button style="margin-top: 12px;"
+                     @click="handleApproveOrg()">加入并分享秘密</el-button>
         </div>
         <!-- 3-2-3 -->
         <div class=main
@@ -737,7 +746,7 @@
 </style>
 
 <script>
-import { applyCreateOrg, getOrgApply, getOrgAttrApply, getOrgInfo } from '../../api/org';
+import { applyCreateOrg, approveJoinOrg, completePK, getOrgApply, getOrgAttrApply, getOrgInfo, sharePkForOrg } from '../../api/org';
 import { getDABEUser } from '../../api/register';
 import { applyOthersAttr, approveAttrApply, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr, syncAttr } from '../../api/userAttr';
 import { decryptContent, encryptAndUpload, getContents } from '../../api/content';
@@ -1024,11 +1033,16 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
         for (const user in this.searchApplyResponse.shareMap) {
           var deepStr = ''
           for (const user2 in this.searchApplyResponse.shareMap[user]) {
-            deepStr += user2 + ':' + this.searchApplyResponse.shareMap[user][user2] + '；'
+            deepStr += user2 + '已分享； '
           }
           shareMap2.push({"user": user, "value" : deepStr})
         }
         this.searchApplyResponse.shareMap2 = shareMap2
+
+        this.searchApplyResponse.opkSet2 = []
+        for (const user in this.searchApplyResponse.opkMap) {
+          this.searchApplyResponse.opkSet2.push(user)
+        }
         console.log(this.searchApplyResponse)
       },
       handleOrgSearch() {
@@ -1049,27 +1063,28 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
         console.log(this.newOrg.users)
       },
       handleApplyNewOrg() {
-        //TODO real
         applyCreateOrg(this.fileName, this.newOrg.t, this.newOrg.n, this.newOrg.users, this.newOrg.orgName).then(res => {
-          console.log(res)
+          console.log(res.data)
           this.$message('申请发起成功')
         })
       },
-      handleApproveOrg(join) {
-        //TODO real
-        if (join) {
+      handleApproveOrg() {
+        approveJoinOrg(this.fileName, this.orgName, this.orgAttrName).then(res => {
+          console.log(res.data)
           this.$message('加入成功')
-        } else {
-          this.$message('已确认不加入该组织')
-        }
+        })
       },
       handleShareForOrg() {
-        //TODO real
-        this.$message('分享成功')
+        sharePkForOrg('CREATION', this.orgName, this.fileName, '').then(res => {
+          console.log(res.data)
+          this.$message('分享成功')
+        })
       },
       handleConfirmOrg() {
-        //TODO real
-        this.$message('组织创建成功')
+        completePK('CREATION', this.orgName, this.fileName, '').then(res => {
+          console.log(res.data)
+          this.$message('组织创建成功')
+        })
       },
       handleApproveOrgAttr(approval) {
         //TODO real

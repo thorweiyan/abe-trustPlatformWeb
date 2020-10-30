@@ -18,6 +18,9 @@ export default {
   decryptContent: host + "/content/decryption",
 
   applyCreateOrg: host + "/org/apply/creation",
+  approveJoinOrg: host + "/org/apply/creation/approval",
+  sharePKForOrg: host + "/org/part-pk",
+  completePK: host + "/org/complete-pk",
 };
 
 export function post(url, params) {
