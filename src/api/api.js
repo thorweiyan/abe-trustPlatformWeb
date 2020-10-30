@@ -13,6 +13,9 @@ export default {
   applyOthersAttr: host + "/user/attr/apply",
   approveAttrApply: host + "/user/attr/approval",
   syncAttr: host + "/user/attr/sync",
+  encryptAndUpload: host + "/content/",
+  getContents: host + "/content/list",
+  decryptContent: host + "/content/decryption",
 };
 
 export function post(url, params) {
