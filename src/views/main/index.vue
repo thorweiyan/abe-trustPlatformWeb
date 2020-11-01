@@ -346,7 +346,7 @@
           </el-row>
 
           <el-button style="margin-top: 12px;"
-                     @click="handleShareForOrg">确认分享秘密</el-button>
+                     @click="handleShareForOrg">确认提交</el-button>
         </div>
         <!-- 3-2-4 -->
         <div class=main
@@ -384,7 +384,7 @@
           </el-row>
 
           <el-button style="margin-top: 12px;"
-                     @click="handleApplyNewOrg">申请</el-button>
+                     @click="handleApplyNewOrgAttr">申请</el-button>
         </div>
         <!-- 3-3-2 -->
         <div class=main
@@ -405,16 +405,8 @@
               </el-input>
             </el-col>
           </el-row>
-          <el-row>
-            <el-col :span="12">
-              <el-button style="margin-top: 12px;"
-                         @click="handleApproveOrgAttr(true)">通过审批</el-button>
-            </el-col>
-            <el-col :span="12">
-              <el-button style="margin-top: 12px;"
-                         @click="handleApproveOrgAttr(false)">不通过审批</el-button>
-            </el-col>
-          </el-row>
+          <el-button style="margin-top: 12px;"
+                     @click="handleApproveOrgAttr()">通过审批</el-button>
         </div>
         <!-- 3-3-3 -->
         <div class=main
@@ -437,7 +429,7 @@
           </el-row>
 
           <el-button style="margin-top: 12px;"
-                     @click="handleShareForOrgAttr()">确认分享秘密</el-button>
+                     @click="handleShareForOrgAttr()">确认提交</el-button>
         </div>
         <!-- 3-3-4 -->
         <div class=main
@@ -746,7 +738,7 @@
 </style>
 
 <script>
-import { applyCreateOrg, approveJoinOrg, completePK, getOrgApply, getOrgAttrApply, getOrgInfo, sharePkForOrg } from '../../api/org';
+import { applyCreateOrg, applyCreateOrgAttr, approveJoinOrg, approveOrgAttr, completePK, getOrgApply, getOrgAttrApply, getOrgInfo, sharePkForOrg } from '../../api/org';
 import { getDABEUser } from '../../api/register';
 import { applyOthersAttr, approveAttrApply, DABEGenerateUserAttr, getOthersApply, PlatGenerateUserAttr, syncAttr } from '../../api/userAttr';
 import { decryptContent, encryptAndUpload, getContents } from '../../api/content';
@@ -1077,7 +1069,7 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
       handleShareForOrg() {
         sharePkForOrg('CREATION', this.orgName, this.fileName, '').then(res => {
           console.log(res.data)
-          this.$message('分享成功')
+          this.$message('提交成功')
         })
       },
       handleConfirmOrg() {
@@ -1086,21 +1078,29 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
           this.$message('组织创建成功')
         })
       },
-      handleApproveOrgAttr(approval) {
-        //TODO real
-        if (approval) {
-          this.$message('审批成功')
-        } else {
-          this.$message('已确认不通过该属性')
-        }
+      handleApplyNewOrgAttr() {
+        applyCreateOrgAttr(this.fileName, this.newOrgAttr.orgAttrName ,this.newOrgAttr.orgName).then(res => {
+          console.log(res.data)
+          this.$message('申请发起成功')
+        })
+      },
+      handleApproveOrgAttr() {
+        approveOrgAttr(this.fileName, this.orgName, this.orgAttrName).then(res => {
+          console.log(res.data)
+          this.$message('提交成功')
+        })
       },
       handleShareForOrgAttr() {
-        //TODO real
-        this.$message('分享成功')
+        sharePkForOrg('ATTRIBUTE', this.orgName, this.fileName, this.orgAttrName).then(res => {
+          console.log(res.data)
+          this.$message('分享成功')
+        })
       },
       handleConfirmOrgAttr() {
-        //TODO real
-        this.$message('组织属性声明成功')
+        completePK('ATTRIBUTE', this.orgName, this.fileName, this.orgAttrName).then(res => {
+          console.log(res.data)
+          this.$message('组织属性声明成功')
+        })
       },
       handleStatusClick(val) {
         this.searchApplyRequest.status = val
@@ -1158,11 +1158,14 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
         if (row.status != 'PENDING') {
           return false
         }
-        if (row.toUid != '') {
+        if (row.applyType != 'TO_ORG') {
           return row.toUid === this.userName
         }
         for (const key in row.approvalMap) {
-          if (key === row.userName) {
+          console.log(key)
+          if (key === this.userName) {
+            console.log(row.approvalMap[key])
+            console.log(row.approvalMap[key] == null)
             return row.approvalMap[key] == null
           }
         }

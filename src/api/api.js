@@ -21,6 +21,9 @@ export default {
   approveJoinOrg: host + "/org/apply/creation/approval",
   sharePKForOrg: host + "/org/part-pk",
   completePK: host + "/org/complete-pk",
+
+  applyCreateOrgAttr: host + "/org/apply/attribute",
+  approveOrgAttr: host + "/org/apply/attribute/approval",
 };
 
 export function post(url, params) {

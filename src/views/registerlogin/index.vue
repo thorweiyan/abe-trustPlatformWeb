@@ -58,21 +58,21 @@ export default {
 <style>
 .el-header,
 .el-footer {
-  background-color: #b3c0d1;
-  color: #333;
+  background-color: #545c64;
+  color: #fff;
   text-align: center;
   line-height: 60px;
 }
 
 .el-aside {
-  background-color: #d3dce6;
-  color: #333;
+  background-color: #545c64;
+  color: #fff;
   /* text-align: center; */
   line-height: 80px;
 }
 
 .el-main {
-  background-color: #e9eef3;
+  background-color: #ffffff;
   color: #333;
   text-align: center;
 }

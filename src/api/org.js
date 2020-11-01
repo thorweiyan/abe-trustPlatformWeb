@@ -38,3 +38,16 @@ export function completePK(type, orgName, fileName, attrName) {
         "fileName": fileName, "type": type, "orgName": orgName, "attrName": attrName,
     }))
 }
+
+
+export function applyCreateOrgAttr(fileName, attrName, orgName,) {
+    return post(api.applyCreateOrgAttr, {
+        "fileName": fileName, "attrName": attrName, "orgName": orgName,
+    })
+}
+
+export function approveOrgAttr(fileName, orgName, attrName) {
+    return post(api.approveOrgAttr, {
+        "fileName": fileName, "attrName": attrName, "orgName": orgName,
+    })
+}
