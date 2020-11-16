@@ -271,7 +271,6 @@ body > .el-container {
 }
 .el-col {
   border-radius: 4px;
-  height: 30px;
 }
 #key {
   width: 100%;
