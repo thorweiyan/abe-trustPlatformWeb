@@ -756,9 +756,9 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
         priKey: null,
         pubKey: null,
         attributes: [],
-        attributesForDisplay: null,
+        attributesForDisplay: '',
         othersAttributes: [],
-        othersAttributesForDisplay: null,
+        othersAttributesForDisplay: '',
         // 声明用户属性
         newAttr: '',
         // 组织相关
@@ -818,13 +818,13 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
     watch: {
       attributes: {
         handler() {
-          this.attributesForDisplay = this.attributes.join(', ')
+          this.attributesForDisplay = this.attributes.length === 0 ? '' : this.attributes.join(', ')
         },
         deep:true
       },
       othersAttributes: {
         handler() {
-          this.othersAttributesForDisplay = this.othersAttributes.join(', ')
+          this.othersAttributesForDisplay = this.othersAttributes.length === 0 ? '' : this.othersAttributes.join(', ')
         },
         deep:true
       },
