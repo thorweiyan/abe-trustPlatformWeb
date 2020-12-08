@@ -99,8 +99,11 @@
             <el-col :span="4">申请的属性</el-col>
             <el-col :span="20">{{othersAttributesForDisplay}}</el-col>
           </el-row>
-          <el-button style="margin-top: 12px;"
+          <el-row>
+            <el-button style="margin-top: 12px;"
                      @click="syncAttr">同步属性</el-button>
+          </el-row>
+          
         </div>
         <!-- 2 -->
         <div class=main
@@ -721,7 +724,7 @@
   line-height: 60px;
 }
 .el-row {
-  line-height: 60px;
+  line-height: 40px;
 }
 .el-main {
   background-color: #ffffff;
@@ -756,9 +759,9 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
         priKey: null,
         pubKey: null,
         attributes: [],
-        attributesForDisplay: '',
+        attributesForDisplay: ' ',
         othersAttributes: [],
-        othersAttributesForDisplay: '',
+        othersAttributesForDisplay: ' ',
         // 声明用户属性
         newAttr: '',
         // 组织相关
@@ -818,13 +821,13 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
     watch: {
       attributes: {
         handler() {
-          this.attributesForDisplay = this.attributes.length === 0 ? '' : this.attributes.join(', ')
+          this.attributesForDisplay = this.attributes.length === 0 ? '无' : this.attributes.join(', ')
         },
         deep:true
       },
       othersAttributes: {
         handler() {
-          this.othersAttributesForDisplay = this.othersAttributes.length === 0 ? '' : this.othersAttributes.join(', ')
+          this.othersAttributesForDisplay = this.othersAttributes.length === 0 ? '无' : this.othersAttributes.join(', ')
         },
         deep:true
       },
@@ -925,6 +928,7 @@ import { decryptContent, encryptAndUpload, getContents } from '../../api/content
         
       },
       orgApply() {
+        this.newOrg.users = []
         this.newOrg.users.push(this.userName)
       },
       approveOrgApply() {
